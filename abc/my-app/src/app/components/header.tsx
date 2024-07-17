@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-no-undef */
 /* eslint-disable react/jsx-key */
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, createContext } from "react";
 import {
   LoginOutlined,
   AppstoreOutlined,
@@ -25,6 +25,7 @@ import {
   List,
   Typography,
   Popover,
+  Modal,
 } from "antd";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -47,7 +48,7 @@ interface SubToken {
 const onSearch = (value: string) => {
   console.log(value);
 };
-var check = true;
+let check = true;
 const Header: React.FC = () => {
   const [current, setCurrent] = useState("token");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -58,6 +59,8 @@ const Header: React.FC = () => {
   const [openPopover, setOpenPopover] = useState(false);
   const [account, setAccount] = useState<string | null>(null);
   const [balance, setBalance] = useState<string>("0");
+  // state for modal
+  const [modal2Open, setModal2Open] = useState(false);
 
   useEffect(() => {
     const isLogin = localStorage.getItem("isLogin") === "true";
@@ -160,23 +163,30 @@ const Header: React.FC = () => {
   const items = [
     isAdmin
       ? {
-          label: <Link href={"/users"}>Users</Link>,
+          label: (
+            <Link
+              className="hover:bg-gray-700 active:bg-gray-700"
+              href={"/users"}
+            >
+              Users
+            </Link>
+          ),
           key: "users",
           icon: <UsergroupAddOutlined />,
         }
       : null,
+    // {
+    //   label: <Link href={"/Tokens"}>Tokens</Link>,
+    //   key: "tokens",
+    //   icon: <TrademarkOutlined />,
+    // },
+    // {
+    //   label: <Link href={"/NFTs"}>NFTs</Link>,
+    //   key: "nft",
+    //   icon: <AppstoreOutlined />,
+    // },
     {
-      label: <Link href={"/Tokens"}>Tokens</Link>,
-      key: "tokens",
-      icon: <TrademarkOutlined />,
-    },
-    {
-      label: <Link href={"/NFTs"}>NFTs</Link>,
-      key: "nft",
-      icon: <AppstoreOutlined />,
-    },
-    {
-      label: <Link href={"/addnew"}>Create</Link>,
+      label: <Link href={"/Create_Layout"}>Create</Link>,
       key: "addnew",
       icon: <CreditCardFilled />,
     },
@@ -203,6 +213,9 @@ const Header: React.FC = () => {
                   <Button className="add-wallet" type="primary">
                     +
                   </Button>
+                  <br />
+                  <br />
+                  <h2>Tracsaction</h2>
                 </div>
               }
               title="Your balance"
@@ -300,9 +313,24 @@ const Header: React.FC = () => {
                       <Title level={4}>
                         Total price: {calculateTotal()} ETH
                       </Title>
-                      <Button type="primary" style={{ width: "100%" }}>
+                      <Button
+                        type="primary"
+                        style={{ width: "100%" }}
+                        onClick={() => setModal2Open(true)}
+                      >
                         Complete Purchase
                       </Button>
+                      <Modal
+                        title="Vertically centered modal dialog"
+                        centered
+                        open={modal2Open}
+                        onOk={() => setModal2Open(false)}
+                        onCancel={() => setModal2Open(false)}
+                      >
+                        <p>some contents...</p>
+                        <p>some contents...</p>
+                        <p>some contents...</p>
+                      </Modal>
                     </div>
                   </>
                 )}

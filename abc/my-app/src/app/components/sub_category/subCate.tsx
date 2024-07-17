@@ -20,8 +20,13 @@ const ListSubCategories: React.FC<ISubCategoryProp> = ({ sub_category }) => {
   } = theme.useToken();
 
   return (
-    <Content style={{ padding: "0 48px", display: "flex" }}>
-      <Breadcrumb style={{ margin: "16px 0", cursor: "pointer" }}>
+    <Content
+      style={{ padding: "0 48px", display: "flex" }}
+    >
+      <Breadcrumb
+        style={{ margin: "16px 0", cursor: "pointer" }}
+        className="hover:bg-gray-700"
+      >
         All &nbsp; &nbsp;
       </Breadcrumb>
       <Breadcrumb style={{ margin: "16px 0", cursor: "pointer" }}>

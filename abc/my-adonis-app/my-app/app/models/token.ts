@@ -4,6 +4,7 @@ import { BaseModel, belongsTo, column, hasMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import SubCategory from './sub_category.js'
 import SubToken from './sub_token.js'
+import User from './user.js'
 
 export default class Token extends BaseModel {
   @column({ isPrimary: true })
@@ -40,4 +41,10 @@ export default class Token extends BaseModel {
     foreignKey: 'token_id',
   })
   declare tokens: HasMany<typeof SubToken>
+  @column()
+  declare user_id: number
+  @belongsTo(() => User, {
+    foreignKey: 'user_id',
+  })
+  declare user: BelongsTo<typeof User>
 }

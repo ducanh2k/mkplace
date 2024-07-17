@@ -51,7 +51,7 @@ const TokenGrid = (props: ITokenProps) => {
                 title={token.name}
                 description={
                   <>
-                    <div>Price: {token.price}</div>
+                    <div>Price: {token.price} MATIC</div>
                     <div>
                       Sub-Category:{" "}
                       {subCategories[token.subCategoryId] || "Loading..."}

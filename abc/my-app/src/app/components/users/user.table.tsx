@@ -24,31 +24,23 @@ const UserTable = (props: IProps) => {
       title: "Email",
       dataIndex: "email",
     },
-    {
-      title: "created_at",
-      dataIndex: "created_at",
-    },
-    {
-      title: "updated_at",
-      dataIndex: "updated_at",
-    },
+    
   ];
 
   const data: IUser[] = [];
 
   const App: React.FC = () => (
     <Table
+      className="hover:bg-gray-700"
       key={"id"}
       bordered
       columns={columns}
       dataSource={users}
       pagination={{
-        size: 'small',
-        position: ['bottomCenter'],
+        size: "small",
+        position: ["bottomCenter"],
         defaultPageSize: 5,
       }}
-      
-      
     />
     // <Pagination align="center" defaultCurrent={1} total={5}/>
   );

@@ -11,7 +11,7 @@ export default class SubTokensController {
     return response.ok(tokens)
   }
   async show({ params, response }: HttpContext) {
-    const subToken = await SubToken.findOrFail(params.id)
+    const subToken = await SubToken.query().where('id', params.id).preload('token')
     return response.json(subToken)
   }
 

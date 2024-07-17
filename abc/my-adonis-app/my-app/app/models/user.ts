@@ -6,6 +6,8 @@ import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 // import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
 import { JwtAccessTokenProvider, JwtSecret } from '#providers/jwt_access_token_provider'
 import parseDuration from 'parse-duration'
+import Token from './token.js'
+import { HasMany } from '@adonisjs/lucid/types/relations'
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   uids: ['email'],
   passwordColumnName: 'password',
@@ -17,6 +19,11 @@ export default class User extends compose(BaseModel, AuthFinder) {
 
   @column()
   declare fullName: string | null
+
+  hasMany = {
+    tokens: () => Token.query().where('user_id', this.id),
+  }
+  declare tokens: HasMany<typeof Token> | null
 
   @column()
   declare email: string

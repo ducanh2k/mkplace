@@ -11,7 +11,6 @@ import {
 } from "@ant-design/icons";
 import { Row, Col, Card, Button, Layout, Menu, theme, message } from "antd";
 import "../../../css/SubToken.css";
-
 const { Header, Sider, Content } = Layout;
 const { Meta } = Card;
 
@@ -114,6 +113,7 @@ const App: React.FC = (props: any) => {
             background: colorBgContainer,
             borderRadius: borderRadiusLG,
           }}
+          
         >
           <div style={{ padding: "30px" }}>
             <Row gutter={[16, 16]}>
@@ -123,12 +123,13 @@ const App: React.FC = (props: any) => {
                     hoverable
                     cover={<img alt={sub_token.name} src={sub_token.image} />}
                     className="hover-card"
+                    onClick={() => router.push('/InfoSubToken/' + sub_token.id)}
                   >
                     <Meta
                       title={sub_token.name}
                       description={
                         <>
-                          <div>Price: {sub_token.price} ETH</div>
+                          <div>Price: {sub_token.price} MATIC</div>
                         </>
                       }
                     />
