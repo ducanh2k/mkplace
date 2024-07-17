@@ -19,6 +19,12 @@ export default class SubToken extends BaseModel {
   @column()
   declare price: number
 
+  @column()
+  declare total_supply: number
+
+  @column()
+  declare description: string
+
   @belongsTo(() => Token, {
     foreignKey: 'token_id',
   })

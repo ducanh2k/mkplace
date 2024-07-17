@@ -21,7 +21,7 @@ export default class SubTokensController {
   }
 
   async store({ request, response }: HttpContext) {
-    const data = request.only(['name', 'image', 'sub_category_id', 'total_supply', 'price'])
+    const data = request.only(['name', 'image', 'token_id', 'total_supply', 'description', 'price'])
     const subToken = await SubToken.create(data)
     return response.created(subToken)
   }

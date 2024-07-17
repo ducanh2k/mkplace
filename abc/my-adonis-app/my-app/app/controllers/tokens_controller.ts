@@ -32,4 +32,8 @@ export default class TokensController {
     const token = await Token.create(data)
     return response.status(201).json(token)
   }
+  async getByUserID({ params, response }: HttpContext) {
+    const token = await Token.query().where('user_id', params.id).preload('user')
+    return response.json(token)
+  }
 }

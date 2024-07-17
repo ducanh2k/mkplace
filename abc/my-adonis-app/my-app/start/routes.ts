@@ -33,6 +33,7 @@ router
 router
   .group(() => {
     router.get('', [TokensController, 'index']).use(middleware.pagination())
+    router.get('/:id', [TokensController, 'getByUserID'])
     router.post('', [TokensController, 'store'])
     router.put('/:id', [TokensController, 'update'])
   })

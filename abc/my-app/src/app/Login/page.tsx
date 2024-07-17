@@ -6,11 +6,6 @@ import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { useRouter } from "next/navigation";
 
-
-
-
-
-
 type FieldType = {
   email?: string;
   password?: string;
@@ -40,13 +35,14 @@ const App: React.FC = () => {
       setToken(token);
       localStorage.setItem("token", token); // Store the token in local storage
       localStorage.setItem("isLogin", true.toString());
-
+      console.log("Token:", token);
       // Make a request to get user details
       const userResponse = await axios.get("http://localhost:3333/user", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+      localStorage.setItem("userID", userResponse.data.id.toString());
       if (userResponse.data.isAdmin === "true") {
         localStorage.setItem("isAdmin", "true");
       } else {

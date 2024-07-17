@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-no-undef */
 /* eslint-disable react/jsx-key */
 "use client";
-import React, { useEffect, useState, createContext } from "react";
+import React, { useEffect, useState } from "react";
 import {
   LoginOutlined,
   AppstoreOutlined,
@@ -114,14 +114,14 @@ const Header: React.FC = () => {
     if (typeof window.ethereum !== "undefined") {
       try {
         const provider = new ethers.BrowserProvider(window.ethereum);
-        const accounts = await provider.send("eth_requestAccounts", []);
-        const account = accounts[0];
+        await provider.send("eth_requestAccounts", []);
+        const signer = provider.getSigner();
+        const account = await (await signer).getAddress();
         setAccount(account);
-        // localStorage.setItem("isLogin", "true");
         setIsLoggedIn(true);
         check = false;
         const balance = await provider.getBalance(account);
-        const balanceInEth = Number(ethers.formatEther(balance)).toFixed(4);
+        const balanceInEth = ethers.formatEther(balance);
         setBalance(balanceInEth);
 
         message.success("Connected to MetaMask successfully!");
@@ -175,16 +175,6 @@ const Header: React.FC = () => {
           icon: <UsergroupAddOutlined />,
         }
       : null,
-    // {
-    //   label: <Link href={"/Tokens"}>Tokens</Link>,
-    //   key: "tokens",
-    //   icon: <TrademarkOutlined />,
-    // },
-    // {
-    //   label: <Link href={"/NFTs"}>NFTs</Link>,
-    //   key: "nft",
-    //   icon: <AppstoreOutlined />,
-    // },
     {
       label: <Link href={"/Create_Layout"}>Create</Link>,
       key: "addnew",

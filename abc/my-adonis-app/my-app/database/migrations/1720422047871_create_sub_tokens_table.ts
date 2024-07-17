@@ -9,6 +9,8 @@ export default class extends BaseSchema {
       table.string('name').notNullable()
       table.integer('price').notNullable()
       table.string('image', 255).nullable()
+      table.string('total_supply').notNullable()
+      table.string('description', 255).nullable()
       table.integer('token_id').unsigned().references('id').inTable('tokens')
       table.timestamp('created_at')
       table.timestamp('updated_at')
