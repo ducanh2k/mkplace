@@ -39,7 +39,7 @@ const InfoToken: React.FC = (props: any) => {
   const id = params.id;
   const [subToken, setSubToken] = useState<SubToken | null>(null);
   const [loading, setLoading] = useState(true);
-
+  const [walletAddress, setWalletAddress] = useState("");
   useEffect(() => {
     if (id) {
       const fetchSubToken = async () => {
@@ -72,9 +72,11 @@ const InfoToken: React.FC = (props: any) => {
       const provider = new ethers.BrowserProvider(window.ethereum);
       await provider.send("eth_requestAccounts", []);
       const signer = provider.getSigner();
-
+      // get address of user's wallet
+      const address = await (await signer).getAddress();
+      setWalletAddress(address);
       const transactionParameters = {
-        to: '0x8b42E3fc8908b6a147a19158F22518F008fddda6', // Địa chỉ ví nhận MATIC
+        to: address, // Địa chỉ ví nhận MATIC
         value: ethers.parseUnits(subToken.price.toString(), "ether"), // Số MATIC cần gửi
       };
 

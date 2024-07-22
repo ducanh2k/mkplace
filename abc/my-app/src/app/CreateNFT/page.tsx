@@ -11,16 +11,20 @@ import {
   Typography,
   Card,
   message,
+  Modal,
+  Steps,
 } from "antd";
 import { UploadOutlined, PlusOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { ethers } from "ethers";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
 const { TextArea } = Input;
+const { Step } = Steps;
 
-interface Token {
+interface SubToken {
   id: number;
   name: string;
   image: string;
@@ -34,7 +38,9 @@ const CreateNFTPage = () => {
   const [description, setDescription] = useState("");
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [file, setFile] = useState<File | null>(null);
-  const [dataToken, setDataToken] = useState<Token[]>([]);
+  const [dataToken, setDataToken] = useState<SubToken[]>([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
   const router = useRouter();
   const userID =
     typeof window !== "undefined" ? localStorage.getItem("userID") : null;
@@ -66,31 +72,57 @@ const CreateNFTPage = () => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!file) {
       message.error("Please upload a file.");
       return;
     }
 
-    const formData = new FormData();
-    formData.append("token_id", collection);
-    formData.append("name", name);
-    formData.append("total_supply", supply);
-    formData.append("description", description);
-    formData.append("image", file.name);
-    axios
-      .post(`http://localhost:3333/sub-tokens/`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .then((response) => {
+    setIsModalVisible(true);
+    setCurrentStep(0);
+
+    try {
+      // Step 1: Uploading to decentralized server
+      setCurrentStep(1);
+
+      if (window.ethereum) {
+        // Step 2: Go to your wallet to approve this transaction
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+        const signer = provider.getSigner();
+        const address = await (await signer).getAddress();
+        const tx = await (
+          await signer
+        ).sendTransaction({
+          to: address, // Replace with your contract address
+          value: ethers.parseEther("0.0000"), // Transaction value
+        });
+        await tx.wait();
+        setCurrentStep(2);
+
+        // Step 3: Minting your item (Saving token to the API)
+        const formData = new FormData();
+        formData.append("token_id", collection);
+        formData.append("name", name);
+        formData.append("total_supply", supply);
+        formData.append("description", description);
+        formData.append("image", file);
+
+        await axios.post(`http://localhost:3333/sub-tokens/`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        setCurrentStep(3);
         message.success("Token created successfully!");
-      })
-      .catch((error) => {
-        console.error(error);
-        message.error("Failed to create token.");
-      });
+      } else {
+        message.error("MetaMask not detected.");
+      }
+    } catch (error) {
+      console.error(error);
+      message.error("Failed to create token or send transaction.");
+    }
   };
 
   return (
@@ -232,6 +264,18 @@ const CreateNFTPage = () => {
           </Button>
         </div>
       </Content>
+      <Modal
+        title="Creating your item"
+        visible={isModalVisible}
+        footer={null}
+        onCancel={() => setIsModalVisible(false)}
+      >
+        <Steps current={currentStep} direction="vertical">
+          <Step title="Uploading to decentralized server" />
+          <Step title="Go to your wallet to approve this transaction" />
+          <Step title="Minting your item" />
+        </Steps>
+      </Modal>
     </Layout>
   );
 };

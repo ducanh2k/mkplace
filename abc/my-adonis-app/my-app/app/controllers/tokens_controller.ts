@@ -2,6 +2,7 @@
 
 import Token from '#models/token'
 import type { HttpContext } from '@adonisjs/core/http'
+import cloudinary from '../../config/cloudinaryConfig.js'
 
 export default class TokensController {
   async index({ params, response }: HttpContext) {
@@ -27,10 +28,35 @@ export default class TokensController {
     return response.json(token)
   }
 
+  private async uploadImage(file: any): Promise<string> {
+    try {
+      const result = await cloudinary.uploader.upload(file.tmpPath, {
+        folder: 'Tokens',
+      })
+      return result.secure_url
+    } catch (error) {
+      console.error('Error uploading image to Cloudinary:', error)
+      throw new Error('Failed to upload image')
+    }
+  }
   async store({ request, response }: HttpContext) {
-    const data = request.only(['name', 'image', 'sub_category_id'])
-    const token = await Token.create(data)
-    return response.status(201).json(token)
+    try {
+      const data = request.only(['name', 'image', 'symbol', 'user_id', 'sub_category_id'])
+      const file = request.file('image', {
+        extnames: ['jpg', 'jpeg', 'png', 'gif'],
+        size: '2mb',
+      })
+      let imageUrl
+      if (file) {
+        imageUrl = await this.uploadImage(file)
+        data.image = imageUrl // Gán URL của ảnh đã upload vào data
+      }
+      const token = await Token.create(data)
+      return response.status(201).json(token)
+    } catch (error) {
+      console.error('Error storing Token:', error)
+      return response.status(500).send({ error: 'Failed to create Token' })
+    }
   }
   async getByUserID({ params, response }: HttpContext) {
     const token = await Token.query().where('user_id', params.id).preload('user')
