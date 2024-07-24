@@ -67,6 +67,7 @@ interface SubCategory {
   name: string;
 }
 
+
 const CreateNFTPage = () => {
   const [file, setFile] = useState<File | null>(null);
   const [contractName, setContractName] = useState("");
@@ -86,6 +87,7 @@ const CreateNFTPage = () => {
   const userID =
     typeof window !== "undefined" ? localStorage.getItem("userID") : null;
 
+ 
   useEffect(() => {
     axios
       .get("http://localhost:3333/categories")
@@ -192,6 +194,13 @@ const CreateNFTPage = () => {
         });
         setCurrentStep(2);
         message.success("Token created successfully!");
+        const transactionData = {
+          buyerId: userID,
+          amount: 1,
+          price: "0.0000",
+        };
+
+        await axios.post("http://localhost:3333/transaction/", transactionData);
       } else {
         message.error("MetaMask not detected.");
       }

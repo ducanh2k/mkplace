@@ -29,7 +29,7 @@ interface SubToken {
   name: string;
   image: string;
   price: number;
-  token_id: number;
+  tokenId: number;
   user_id: string; // Địa chỉ ví của người dùng
 }
 
@@ -40,8 +40,23 @@ const InfoToken: React.FC = (props: any) => {
   const [subToken, setSubToken] = useState<SubToken | null>(null);
   const [loading, setLoading] = useState(true);
   const [walletAddress, setWalletAddress] = useState("");
+  const [ownerName, setOwenerName] = useState("");
+
+  const userID = localStorage.getItem("userID");
+  const ownerID = localStorage.getItem("ownerID");
   useEffect(() => {
     if (id) {
+      const getOwnerName = async () => {
+        try {
+          const response = await axios.get(
+            `http://localhost:3333/users/${ownerID}`
+          );
+          setOwenerName(response.data.fullName);
+        } catch (error) {
+          message.error("Error fetching sub-token");
+        }
+      };
+      getOwnerName();
       const fetchSubToken = async () => {
         try {
           const response = await axios.get(
@@ -84,6 +99,16 @@ const InfoToken: React.FC = (props: any) => {
         const tx = await (await signer).sendTransaction(transactionParameters);
         message.success("Transaction sent! Check your wallet.");
         setModal2Open(false);
+        message.success(subToken.price + " MATIC purchased successfully!");
+        const transactionData = {
+          buyerId: userID,
+          sellerId: ownerID,
+          tokenId: subToken.tokenId,
+          amount: 1,
+          price: subToken.price,
+        };
+
+        await axios.post("http://localhost:3333/transaction/", transactionData);
       } catch (error) {
         console.error("Error sending transaction: ", error);
         message.error("Failed to send transaction.");
@@ -129,7 +154,7 @@ const InfoToken: React.FC = (props: any) => {
                 <div className="col-md-6 item-details">
                   <div className="d-flex justify-content-between align-items-center">
                     <p className="d-flex">
-                      <strong>Owner: {subToken.user_id}</strong>
+                      <strong>Owner: {ownerName}</strong>
                     </p>
                     <div
                       className="d-flex flex-column"

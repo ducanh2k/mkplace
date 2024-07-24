@@ -18,7 +18,7 @@ export default class UsersController {
     return response.json(users)
   }
   async store({ request, response }: HttpContext) {
-    const data = request.only(['username', 'email', 'password'])
+    const data = request.only(['fullName', 'email', 'password'])
     const user = await User.create(data)
     // if (await Bouncer.with(UserPolicy).denies('create', user)) {
     //   return response.forbidden('Cannot create user')
@@ -33,10 +33,10 @@ export default class UsersController {
 
   async update({ bouncer, params, request, response }: HttpContext) {
     const user = await User.findOrFail(params.id)
-    if (await bouncer.with(PostPolicy).denies('edit', user.id)) {
-      return response.forbidden('Cannot edit user')
-    }
-    const data = request.only(['username', 'email', 'password'])
+    // if (await bouncer.with(PostPolicy).denies('edit', user.id)) {
+    //   return response.forbidden('Cannot edit user')
+    // }
+    const data = request.only(['fullName', 'email', 'password'])
     user.merge(data)
     await user.save()
     return response.json(user)

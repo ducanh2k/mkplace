@@ -27,10 +27,22 @@ const App: React.FC = (props: any) => {
   const router = useRouter();
   const id = params.id;
   const [subToken, setSubToken] = useState<SubToken[]>([]);
+  const [Token, setToken] = useState<SubToken[]>([]);
   const [cart, setCart] = useState<SubToken[]>([]);
 
   useEffect(() => {
     if (id) {
+      const getTokenOwner = async () => {
+        try {
+          const response = await axios.post(
+            "http://localhost:3333/tokens/" + id
+          );
+          setToken(response.data);
+          localStorage.setItem("ownerID", response.data.userId.toString());
+        } catch (error) {
+          console.error("Error fetching sub-token:", error);
+        }
+      };
       const fetchSubToken = async () => {
         try {
           const response = await axios.post(
@@ -41,6 +53,7 @@ const App: React.FC = (props: any) => {
           console.error("Error fetching sub-token:", error);
         }
       };
+      getTokenOwner();
       fetchSubToken();
     }
   }, [id]);
@@ -113,7 +126,6 @@ const App: React.FC = (props: any) => {
             background: colorBgContainer,
             borderRadius: borderRadiusLG,
           }}
-          
         >
           <div style={{ padding: "30px" }}>
             <Row gutter={[16, 16]}>
@@ -123,7 +135,7 @@ const App: React.FC = (props: any) => {
                     hoverable
                     cover={<img alt={sub_token.name} src={sub_token.image} />}
                     className="hover-card"
-                    onClick={() => router.push('/InfoSubToken/' + sub_token.id)}
+                    onClick={() => router.push("/InfoSubToken/" + sub_token.id)}
                   >
                     <Meta
                       title={sub_token.name}

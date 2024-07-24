@@ -13,6 +13,8 @@ import {
   UsergroupAddOutlined,
   DeleteOutlined,
   DownloadOutlined,
+  BankOutlined,
+  CheckCircleOutlined,
 } from "@ant-design/icons";
 import {
   message,
@@ -26,6 +28,7 @@ import {
   Typography,
   Popover,
   Modal,
+  Avatar,
 } from "antd";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -33,6 +36,7 @@ import { ethers } from "ethers";
 import "../../css/login.css";
 import "../../css/wallet.css";
 import "../../css/menu.css";
+import axios from "axios";
 
 const { Search } = Input;
 const { Title } = Typography;
@@ -43,6 +47,13 @@ interface SubToken {
   image: string;
   price: number;
   token_id: number;
+}
+
+interface Transaction {
+  id: number;
+  price: number;
+  amount: number;
+  createdAt: Date;
 }
 
 const onSearch = (value: string) => {
@@ -61,7 +72,26 @@ const Header: React.FC = () => {
   const [balance, setBalance] = useState<string>("0");
   // state for modal
   const [modal2Open, setModal2Open] = useState(false);
+  const [transaction, setTransaction] = useState<Transaction[] | []>([]);
+  const [loading, setLoading] = useState(true);
 
+  const userID =
+    typeof window !== "undefined" ? localStorage.getItem("userID") : null;
+  useEffect(() => {
+    // Fetch transactions from the API
+    axios
+      .get("http://localhost:3333/transaction/" + userID)
+      .then((response) => {
+        setTransaction(response.data);
+      })
+      .catch((error) => {
+        console.error(error);
+        message.error("Failed to fetch transactions");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
   useEffect(() => {
     const isLogin = localStorage.getItem("isLogin") === "true";
     const adminStatus = localStorage.getItem("isAdmin") === "true";
@@ -145,6 +175,9 @@ const Header: React.FC = () => {
     check = true;
   };
 
+  const handleProfileClick = () => {
+    router.push("/Profile");
+  };
   //Items of menu
   const items2 = [
     {
@@ -152,6 +185,12 @@ const Header: React.FC = () => {
       key: "1",
       icon: <UserOutlined />,
       onClick: handleLogoutClick,
+    },
+    {
+      label: "Your assets",
+      key: "2",
+      icon: <BankOutlined />,
+      onClick: handleProfileClick,
     },
   ];
 
@@ -206,6 +245,42 @@ const Header: React.FC = () => {
                   <br />
                   <br />
                   <h2>Tracsaction</h2>
+                  <div style={{ maxHeight: "50vh", overflowY: "scroll" }}>
+                    <List
+                      itemLayout="horizontal"
+                      dataSource={transaction}
+                      loading={loading}
+                      renderItem={(transaction) => (
+                        <List.Item>
+                          <List.Item.Meta
+                            avatar={
+                              <Avatar
+                                icon={<CheckCircleOutlined />}
+                                style={{ backgroundColor: "#4CAF50" }}
+                              />
+                            }
+                            title={
+                              <div style={{ color: "#fff" }}>
+                                {transaction.id}{" "}
+                                <span style={{ fontWeight: "normal" }}>
+                                  ({transaction.price} MATIC)
+                                </span>
+                              </div>
+                            }
+                            description={
+                              <div style={{ color: "#aaa" }}>
+                                Amount: {transaction.amount} | Price: {transaction.price}
+                                <br />
+                                {new Date(
+                                  transaction.createdAt
+                                ).toLocaleString()}
+                              </div>
+                            }
+                          />
+                        </List.Item>
+                      )}
+                    />
+                  </div>
                 </div>
               }
               title="Your balance"
