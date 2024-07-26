@@ -5,7 +5,7 @@ import SubToken from '#models/sub_token'
 import { HttpContext } from '@adonisjs/core/http'
 import cloudinary from '../../config/cloudinaryConfig.js'
 export default class SubTokensController {
-  async index({ params, response }: HttpContext) {
+  async index({ response }: HttpContext) {
     // const tokens = await SubToken.query().paginate(params.page, params.perPage)
     const tokens = await SubToken.all()
     // return tokens.toJSON().data

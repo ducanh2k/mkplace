@@ -4,7 +4,7 @@ import Transaction from '#models/transaction'
 import { HttpContext } from '@adonisjs/core/http'
 
 export default class TransactionsController {
-  async index({ params, response }: HttpContext) {
+  async index({ params }: HttpContext) {
     const transactions = await Transaction.query()
       .where('buyerId', params.id)
       .paginate(params.page, params.perPage)

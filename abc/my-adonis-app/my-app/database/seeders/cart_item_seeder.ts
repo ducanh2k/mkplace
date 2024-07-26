@@ -5,14 +5,12 @@ export default class extends BaseSeeder {
   async run() {
     await CartItem.createMany([
       {
-        userId: 1,
+        user_id: 1,
         token_id: 1,
-        bidAmount: 1,
       },
       {
-        userId: 2,
+        user_id: 2,
         token_id: 3,
-        bidAmount: 100,
       },
     ])
   }

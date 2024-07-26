@@ -4,7 +4,7 @@ import Category from '#models/category'
 import { HttpContext } from '@adonisjs/core/http'
 
 export default class CategoriesController {
-  async index({ params, response }: HttpContext) {
+  async index({ response }: HttpContext) {
     const categories = await Category.all()
     return response.ok(categories)
   }

@@ -16,6 +16,8 @@ const { Meta } = Card;
 
 interface SubToken {
   id: number;
+  user_id: number;
+  quantity: number;
   name: string;
   image: string;
   price: number;
@@ -29,6 +31,8 @@ const App: React.FC = (props: any) => {
   const [subToken, setSubToken] = useState<SubToken[]>([]);
   const [Token, setToken] = useState<SubToken[]>([]);
   const [cart, setCart] = useState<SubToken[]>([]);
+
+  const userID = localStorage.getItem("userID");
 
   useEffect(() => {
     if (id) {
@@ -63,18 +67,35 @@ const App: React.FC = (props: any) => {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
-  const addToCart = (item: SubToken) => {
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const existingItem = cart.find(
-      (cartItem: SubToken) => cartItem.id === item.id
-    );
-    if (existingItem) {
-      message.warning(`${item.name} is already in your cart!`);
-    } else {
-      setCart([...cart, item]);
-      const updateCart = [...cart, item];
+  const fetchCartItems = async () => {
+    try {
+      const response = await axios.get(`http://localhost:3333/cart/${id}`);
+      setCart(response.data);
+    } catch (error) {
+      console.error("Error fetching cart items:", error);
+      message.error("Failed to fetch cart items");
+    }
+  };
+
+  useEffect(() => {
+    fetchCartItems();
+  }, []);
+
+  const addToCart = async (item: SubToken) => {
+    try {
+      const response = await axios.post("http://localhost:3333/cart", {
+        user_id: userID,
+        name: item.name,
+        image: item.image,
+        price: item.price,
+        token_id: item.id,
+        quantity: 1,
+      });
+      setCart([...cart, response.data]);
       message.success(`${item.name} is added to your cart!`);
-      localStorage.setItem("cart", JSON.stringify(updateCart));
+    } catch (error) {
+      console.error("Error adding item to cart:", error);
+      message.error("Failed to add item to cart");
     }
   };
 

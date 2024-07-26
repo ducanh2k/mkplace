@@ -1,18 +1,14 @@
-/* eslint-disable react/jsx-no-undef */
 /* eslint-disable react/jsx-key */
 "use client";
 import React, { useEffect, useState } from "react";
 import {
   LoginOutlined,
-  AppstoreOutlined,
-  TrademarkOutlined,
   UserOutlined,
   WalletOutlined,
   ShoppingCartOutlined,
   CreditCardFilled,
   UsergroupAddOutlined,
   DeleteOutlined,
-  DownloadOutlined,
   BankOutlined,
   CheckCircleOutlined,
 } from "@ant-design/icons";
@@ -29,6 +25,8 @@ import {
   Popover,
   Modal,
   Avatar,
+  InputNumber,
+  Form,
 } from "antd";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -46,6 +44,7 @@ interface SubToken {
   name: string;
   image: string;
   price: number;
+  quantity: number;
   token_id: number;
 }
 
@@ -70,6 +69,9 @@ const Header: React.FC = () => {
   const [openPopover, setOpenPopover] = useState(false);
   const [account, setAccount] = useState<string | null>(null);
   const [balance, setBalance] = useState<string>("0");
+  const [addFundsModalVisible, setAddFundsModalVisible] = useState(false);
+  const [addFundsAmount, setAddFundsAmount] = useState<number>(0.01); // default value to avoid null
+
   // state for modal
   const [modal2Open, setModal2Open] = useState(false);
   const [transaction, setTransaction] = useState<Transaction[] | []>([]);
@@ -77,10 +79,12 @@ const Header: React.FC = () => {
 
   const userID =
     typeof window !== "undefined" ? localStorage.getItem("userID") : null;
+  const ownerID = localStorage.getItem("ownerID");
+
   useEffect(() => {
     // Fetch transactions from the API
     axios
-      .get("http://localhost:3333/transaction/" + userID)
+      .get(`http://localhost:3333/transaction/${userID}`)
       .then((response) => {
         setTransaction(response.data);
       })
@@ -91,7 +95,8 @@ const Header: React.FC = () => {
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [userID]);
+
   useEffect(() => {
     const isLogin = localStorage.getItem("isLogin") === "true";
     const adminStatus = localStorage.getItem("isAdmin") === "true";
@@ -100,24 +105,31 @@ const Header: React.FC = () => {
     router.push("/");
     if (isLogin) {
       connectMetaMask();
+      fetchCartItems();
     }
   }, []);
 
-  // Lấy giỏ hàng từ localStorage khi mở Drawer
+  const fetchCartItems = () => {
+    axios
+      .get(`http://localhost:3333/cart/${userID}`)
+      .then((response) => {
+        setCartItems(response.data);
+      })
+      .catch((error) => {
+        console.error(error);
+        message.error("Failed to fetch cart items");
+      });
+  };
+
   const showDrawer = () => {
-    const storedCart = localStorage.getItem("cart");
-    if (storedCart) {
-      setCartItems(JSON.parse(storedCart));
-    }
+    fetchCartItems();
     setOpen(true);
   };
 
-  // close Popover
   const hidePopover = () => {
     setOpenPopover(false);
   };
 
-  // handle Open event
   const handleOpenChange = (newOpen: boolean) => {
     setOpenPopover(newOpen);
   };
@@ -126,20 +138,49 @@ const Header: React.FC = () => {
     setOpen(false);
   };
 
-  // Calculate total
   const calculateTotal = () => {
-    return cartItems.reduce((total, item) => total + item.price, 0).toFixed(4);
+    return cartItems
+      .reduce((total, item) => total + item.price * item.quantity, 0)
+      .toFixed(4);
   };
 
-  // Remove from cart
+  const updateQuantity = (item: SubToken, quantity: number | null) => {
+    const updatedQuantity = quantity ?? 1; // Set default quantity to 1
+    axios
+      .put(`http://localhost:3333/cart/${item.id}`, {
+        quantity: updatedQuantity,
+      })
+      .then((response) => {
+        setCartItems((prevCartItems) =>
+          prevCartItems.map((cartItem) =>
+            cartItem.id === item.id
+              ? { ...cartItem, quantity: updatedQuantity }
+              : cartItem
+          )
+        );
+        message.success(`${item.name} quantity updated!`);
+      })
+      .catch((error) => {
+        console.error(error);
+        message.error("Failed to update quantity");
+      });
+  };
+
   const removeFromCart = (item: SubToken) => {
-    const updatedCart = cartItems.filter((cartItem) => cartItem.id !== item.id);
-    setCartItems(updatedCart);
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
-    message.success(`${item.name} is removed from cart!`);
+    axios
+      .delete(`http://localhost:3333/cart/${item.id}`)
+      .then((response) => {
+        setCartItems((prevCartItems) =>
+          prevCartItems.filter((cartItem) => cartItem.id !== item.id)
+        );
+        message.success(`${item.name} is removed from cart!`);
+      })
+      .catch((error) => {
+        console.error(error);
+        message.error("Failed to remove item from cart");
+      });
   };
 
-  // MetaMask login
   const connectMetaMask = async () => {
     if (typeof window.ethereum !== "undefined") {
       try {
@@ -166,7 +207,6 @@ const Header: React.FC = () => {
     }
   };
 
-  // Logout
   const handleLogoutClick = () => {
     localStorage.removeItem("isLogin");
     setIsLoggedIn(false);
@@ -178,7 +218,80 @@ const Header: React.FC = () => {
   const handleProfileClick = () => {
     router.push("/Profile");
   };
-  //Items of menu
+
+  const addFundsWithMetaMask = async (amount: number) => {
+    if (typeof window.ethereum !== "undefined") {
+      try {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        const signer = provider.getSigner();
+
+        const transactionParameters = {
+          to: account, // Recipient's wallet address
+          value: ethers.parseUnits(amount.toString(), "ether"), // Amount of MATIC to send
+        };
+
+        try {
+          const tx = await (
+            await signer
+          ).sendTransaction(transactionParameters);
+          message.success("Funds added! Check your wallet.");
+        } catch (error) {
+          console.error("Error sending transaction: ", error);
+          message.error("Failed to add funds.");
+        }
+      } catch (error) {
+        console.error(error);
+        message.error("Failed to connect to MetaMask.");
+      }
+    } else {
+      message.error(
+        "MetaMask is not installed. Please install MetaMask and try again."
+      );
+    }
+  };
+
+  const completePurchase = async () => {
+    if (typeof window.ethereum !== "undefined") {
+      try {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        const signer = provider.getSigner();
+
+        const transactionParameters = {
+          to: account, // Recipient's wallet address
+          value: ethers.parseUnits(calculateTotal(), "ether"), // Total amount of MATIC to send
+        };
+
+        try {
+          const tx = await (
+            await signer
+          ).sendTransaction(transactionParameters);
+          message.success("Transaction sent! Check your wallet.");
+          setModal2Open(false);
+
+          // Save transaction information to the API
+          await axios.post(`http://localhost:3333/transaction/`, {
+            buyerId: userID,
+            sellerId: ownerID,
+            amount: cartItems.length,
+            price: calculateTotal(),
+          });
+        } catch (error) {
+          console.error("Error sending transaction: ", error);
+          message.error("Failed to send transaction.");
+        }
+      } catch (error) {
+        console.error(error);
+        message.error("Failed to connect to MetaMask.");
+      }
+    } else {
+      message.error(
+        "MetaMask is not installed. Please install MetaMask and try again."
+      );
+    }
+  };
+
   const items2 = [
     {
       label: "Logout",
@@ -198,7 +311,6 @@ const Header: React.FC = () => {
     items: items2,
   };
 
-  //Items of menu
   const items = [
     isAdmin
       ? {
@@ -239,12 +351,16 @@ const Header: React.FC = () => {
               content={
                 <div className="wallet-menu-item">
                   <a onClick={hidePopover}>{balance} MATIC</a>
-                  <Button className="add-wallet" type="primary">
+                  <Button
+                    className="add-wallet"
+                    type="primary"
+                    onClick={() => setAddFundsModalVisible(true)}
+                  >
                     +
                   </Button>
                   <br />
                   <br />
-                  <h2>Tracsaction</h2>
+                  <h2>Transaction</h2>
                   <div style={{ maxHeight: "50vh", overflowY: "scroll" }}>
                     <List
                       itemLayout="horizontal"
@@ -269,7 +385,8 @@ const Header: React.FC = () => {
                             }
                             description={
                               <div style={{ color: "#aaa" }}>
-                                Amount: {transaction.amount} | Price: {transaction.price}
+                                Amount: {transaction.amount} | Price:{" "}
+                                {transaction.price}
                                 <br />
                                 {new Date(
                                   transaction.createdAt
@@ -353,6 +470,14 @@ const Header: React.FC = () => {
                       renderItem={(item) => (
                         <List.Item
                           actions={[
+                            <InputNumber
+                              min={1}
+                              max={99}
+                              value={item.quantity}
+                              onChange={(value) =>
+                                updateQuantity(item, value ?? 1)
+                              }
+                            />,
                             <Button
                               type="link"
                               icon={<DeleteOutlined />}
@@ -369,14 +494,14 @@ const Header: React.FC = () => {
                               />
                             }
                             title={item.name}
-                            description={<p>Price: {item.price} ETH</p>}
+                            description={<p>Price: {item.price} MATIC</p>}
                           />
                         </List.Item>
                       )}
                     />
                     <div style={{ marginTop: "16px" }}>
                       <Title level={4}>
-                        Total price: {calculateTotal()} ETH
+                        Total price: {calculateTotal()} MATIC
                       </Title>
                       <Button
                         type="primary"
@@ -386,15 +511,14 @@ const Header: React.FC = () => {
                         Complete Purchase
                       </Button>
                       <Modal
-                        title="Vertically centered modal dialog"
+                        title="Complete Purchase"
                         centered
                         open={modal2Open}
-                        onOk={() => setModal2Open(false)}
+                        onOk={completePurchase}
                         onCancel={() => setModal2Open(false)}
                       >
-                        <p>some contents...</p>
-                        <p>some contents...</p>
-                        <p>some contents...</p>
+                        <p>Do you want to complete the purchase?</p>
+                        <p>Total price: {calculateTotal()} MATIC</p>
                       </Modal>
                     </div>
                   </>
@@ -405,7 +529,7 @@ const Header: React.FC = () => {
           key: "cart",
         }
       : null,
-  ].filter(Boolean); // Loại bỏ các phần tử null khỏi mảng
+  ].filter(Boolean);
 
   const onClick = (e: { key: string }) => {
     console.log("click ", e);
@@ -413,13 +537,35 @@ const Header: React.FC = () => {
   };
 
   return (
-    <Menu
-      onClick={onClick}
-      selectedKeys={[current]}
-      mode="horizontal"
-      items={items}
-      className="menu"
-    />
+    <>
+      <Menu
+        onClick={onClick}
+        selectedKeys={[current]}
+        mode="horizontal"
+        items={items}
+        className="menu"
+      />
+      <Modal
+        title="Add Funds"
+        centered
+        open={addFundsModalVisible}
+        onOk={() => {
+          addFundsWithMetaMask(addFundsAmount);
+          setAddFundsModalVisible(false);
+        }}
+        onCancel={() => setAddFundsModalVisible(false)}
+      >
+        <Form>
+          <Form.Item label="Amount (MATIC)">
+            <InputNumber
+              min={0.01}
+              value={addFundsAmount}
+              onChange={(value) => setAddFundsAmount(value ?? 0.01)}
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
+    </>
   );
 };
 

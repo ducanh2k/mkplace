@@ -3,9 +3,9 @@ import { BasePolicy } from '@adonisjs/bouncer'
 import type { AuthorizerResponse } from '@adonisjs/bouncer/types'
 
 export default class PostPolicy extends BasePolicy {
-  create(user: User): AuthorizerResponse {
-    return true
-  }
+  // create(user: User): AuthorizerResponse {
+  //   return true
+  // }
   edit(user: User, id: number): AuthorizerResponse {
     return user.id === id
   }
@@ -23,14 +23,14 @@ export default class PostPolicy extends BasePolicy {
     }
     return user.id === id
   }
-  async before(user: User | null, action: string, ...params: any[]) {
-    if (user && user.isAdmin) {
-      return true
-    }
-  }
-  async after(user: User | null, action: string, response: AuthorizerResponse, ...params: any[]) {
-    if (user && user.isAdmin) {
-      return true
-    }
-  }
+  // async before(user: User | null, action: string, ...params: any[]) {
+  //   if (user && user.isAdmin) {
+  //     return true
+  //   }
+  // }
+  // async after(user: User | null, action: string, response: AuthorizerResponse, ...params: any[]) {
+  //   if (user && user.isAdmin) {
+  //     return true
+  //   }
+  // }
 }

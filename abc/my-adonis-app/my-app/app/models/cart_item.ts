@@ -10,7 +10,7 @@ export default class cart_items extends BaseModel {
   declare id: number
 
   @column()
-  declare token_id: []
+  declare token_id: number
 
   @column()
   declare user_id: number
@@ -20,6 +20,12 @@ export default class cart_items extends BaseModel {
 
   @column()
   declare price: number
+
+  @column()
+  declare name: string
+
+  @column()
+  declare image: string
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

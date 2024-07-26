@@ -3,13 +3,13 @@ import PostPolicy from '#policies/post_policy'
 import { createUserValidator } from '#validators/user'
 import type { HttpContext } from '@adonisjs/core/http'
 export default class UsersController {
-  async login({ request, params }: HttpContext) {
+  async login({ request }: HttpContext) {
     const { email, password } = request.only(['email', 'password'])
     const user = await User.verifyCredentials(email, password)
     const accessToken = await User.accessTokens.create(user)
     return accessToken
   }
-  async index({ params, response, auth, bouncer }: HttpContext) {
+  async index({ params }: HttpContext) {
     const users = await User.query().paginate(params.page, params.perPage)
     return users.toJSON().data
   }
@@ -31,7 +31,7 @@ export default class UsersController {
     return response.json(user)
   }
 
-  async update({ bouncer, params, request, response }: HttpContext) {
+  async update({ params, request, response }: HttpContext) {
     const user = await User.findOrFail(params.id)
     // if (await bouncer.with(PostPolicy).denies('edit', user.id)) {
     //   return response.forbidden('Cannot edit user')

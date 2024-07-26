@@ -4,13 +4,13 @@ import { HttpContext } from '@adonisjs/core/http'
 export default class CartsController {
   async index({ params }: HttpContext) {
     // const user = await auth.authenticate()
-    const cart = await cart_item.query().where('user_id', params.id).firstOrFail()
+    const cart = await cart_item.query().where('user_id', params.id)
     return cart
   }
 
-  async store({ params, request, response }: HttpContext) {
+  async store({ request, response }: HttpContext) {
     // const user = await auth.authenticate()
-    const data = request.only(['token_id', 'quantity', 'price', 'user_id'])
+    const data = request.only(['token_id', 'quantity', 'price', 'user_id', 'name', 'image'])
     const cart = await cart_item.create(data)
     return response.json(cart)
   }
@@ -22,7 +22,7 @@ export default class CartsController {
 
   async update({ params, request, response }: HttpContext) {
     const cart = await cart_item.findOrFail(params.id)
-    const data = request.only(['token_id'])
+    const data = request.only(['quantity'])
     cart.merge(data)
     await cart.save()
     return response.json(cart)

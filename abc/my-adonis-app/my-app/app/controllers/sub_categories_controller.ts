@@ -2,7 +2,7 @@ import SubCategory from '#models/sub_category'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class SubCategoriesController {
-  async index({ params, response }: HttpContext) {
+  async index({ response }: HttpContext) {
     const subCategories = await SubCategory.all()
     return response.json(subCategories)
   }

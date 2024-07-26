@@ -18,6 +18,7 @@ import { UploadOutlined, PlusOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { ethers } from "ethers";
+import { UploadChangeParam } from "antd/es/upload";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -66,9 +67,9 @@ const CreateNFTPage = () => {
     }
   }, [collection, name, supply, description, file]);
 
-  const handleFileChange = (info: any) => {
-    if (info.file.status === "done") {
-      setFile(info.file.originFileObj);
+  const handleUpload = (info: UploadChangeParam) => {
+    if (info.file.status === "done" || info.file.status === "uploading") {
+      setFile(info.file.originFileObj as File);
     }
   };
 
@@ -152,27 +153,25 @@ const CreateNFTPage = () => {
             information.
           </Text>
           <Upload.Dragger
-            name="files"
-            multiple={false}
-            style={{
-              backgroundColor: "#333",
-              borderRadius: "10px",
-              padding: "20px",
-              border: "1px dashed #fff",
-              marginBottom: "20px",
-            }}
-            onChange={handleFileChange}
-          >
-            <p className="ant-upload-drag-icon">
-              <UploadOutlined style={{ color: "#fff", fontSize: "24px" }} />
-            </p>
-            <p className="ant-upload-text" style={{ color: "#fff" }}>
-              Drag and drop media
-            </p>
-            <p className="ant-upload-hint" style={{ color: "#fff" }}>
-              JPG, PNG, GIF, SVG, MP4. Max size: 50MB
-            </p>
-          </Upload.Dragger>
+              name="files"
+              multiple={false}
+              onChange={handleUpload}
+              style={{
+                backgroundColor: "#333",
+                borderRadius: "10px",
+                padding: "20px",
+                border: "1px dashed #fff",
+                marginBottom: "20px",
+                color: "#fff",
+              }}
+            >
+              <p className="ant-upload-drag-icon">
+                <UploadOutlined style={{ color: "#fff", fontSize: "24px" }} />
+              </p>
+              <p className="ant-upload-text" style={{ color: "#fff" }}>
+                Drag and drop or click to upload
+              </p>
+            </Upload.Dragger>
         </div>
         <div style={{ width: "50%", height: "70%" }}>
           <Card

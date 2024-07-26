@@ -5,7 +5,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import cloudinary from '../../config/cloudinaryConfig.js'
 
 export default class TokensController {
-  async index({ params, response }: HttpContext) {
+  async index({ params }: HttpContext) {
     const tokens = await Token.query().paginate(params.page, params.perPage)
     return tokens.toJSON().data
   }
