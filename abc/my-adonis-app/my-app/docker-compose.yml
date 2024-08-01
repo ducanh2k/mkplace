@@ -5,18 +5,8 @@ services:
     build: .
     ports:
       - "3333:3333"
-    environment:
-      PORT: ${PORT}
-      HOST: ${HOST}
-      NODE_ENV: production
-      LOG_LEVEL: ${LOG_LEVEL}
-      SESSION_DRIVER: ${SESSION_DRIVER}
-      DB_PORT: ${DB_PORT}
-      DB_DATABASE: ${DB_DATABASE}
-      APP_KEY: ${APP_KEY}
-      DB_HOST: ${DB_HOST}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
+    env_file:
+      - .env
     depends_on:
       - postgresql
     command: sh -c "node ace migration:run && node ace db:seed && node bin/server.js"

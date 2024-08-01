@@ -5,7 +5,7 @@
   "type": "module",
   "license": "UNLICENSED",
   "scripts": {
-    "start": "node bin/server.js",
+    "start": "node build/bin/server.js",
     "build": "node ace build",
     "dev": "node ace serve --hmr",
     "test": "node ace test",
@@ -47,7 +47,7 @@
     "@types/node": "^20.14.9",
     "eslint": "^8.57.0",
     "hot-hook": "^0.2.6",
-    "pino-pretty": "^11.2.1",
+    "pino-pretty": "^11.2.2",
     "prettier": "^3.3.2",
     "ts-node": "^10.9.2",
     "typescript": "~5.4"

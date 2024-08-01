@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable react/jsx-key */
 "use client";
 import React, { useEffect, useState } from "react";
@@ -76,25 +77,30 @@ const Header: React.FC = () => {
   const [modal2Open, setModal2Open] = useState(false);
   const [transaction, setTransaction] = useState<Transaction[] | []>([]);
   const [loading, setLoading] = useState(true);
-
-  const userID =
-    typeof window !== "undefined" ? localStorage.getItem("userID") : null;
-  const ownerID = localStorage.getItem("ownerID");
+  const [userID, setUserID] = useState<string>();
+  const [ownerID, setOwnerID] = useState<string>();
+  useEffect(() => {
+    setUserID(localStorage.getItem("userID")?.toString());
+    setUserID(localStorage.getItem("ownerID")?.toString());
+  }, [userID, ownerID]);
 
   useEffect(() => {
-    // Fetch transactions from the API
-    axios
-      .get(`http://localhost:3333/transaction/${userID}`)
-      .then((response) => {
+    const fetchTransactions = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(
+          `http://localhost:3333/transaction/${userID}`
+        );
         setTransaction(response.data);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error(error);
         message.error("Failed to fetch transactions");
-      })
-      .finally(() => {
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchTransactions();
   }, [userID]);
 
   useEffect(() => {
@@ -109,8 +115,8 @@ const Header: React.FC = () => {
     }
   }, []);
 
-  const fetchCartItems = () => {
-    axios
+  const fetchCartItems = async () => {
+    await axios
       .get(`http://localhost:3333/cart/${userID}`)
       .then((response) => {
         setCartItems(response.data);
@@ -144,9 +150,9 @@ const Header: React.FC = () => {
       .toFixed(4);
   };
 
-  const updateQuantity = (item: SubToken, quantity: number | null) => {
+  const updateQuantity = async (item: SubToken, quantity: number | null) => {
     const updatedQuantity = quantity ?? 1; // Set default quantity to 1
-    axios
+    await axios
       .put(`http://localhost:3333/cart/${item.id}`, {
         quantity: updatedQuantity,
       })
@@ -166,8 +172,8 @@ const Header: React.FC = () => {
       });
   };
 
-  const removeFromCart = (item: SubToken) => {
-    axios
+  const removeFromCart = async (item: SubToken) => {
+    await axios
       .delete(`http://localhost:3333/cart/${item.id}`)
       .then((response) => {
         setCartItems((prevCartItems) =>
@@ -208,13 +214,12 @@ const Header: React.FC = () => {
   };
 
   const handleLogoutClick = () => {
-    localStorage.removeItem("isLogin");
+    typeof window ? localStorage.removeItem("isLogin") : null;
     setIsLoggedIn(false);
     setAccount(null);
     setBalance("0");
     check = true;
   };
-
   const handleProfileClick = () => {
     router.push("/Profile");
   };

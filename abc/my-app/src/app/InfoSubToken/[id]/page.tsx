@@ -42,8 +42,10 @@ const InfoToken: React.FC = (props: any) => {
   const [walletAddress, setWalletAddress] = useState("");
   const [ownerName, setOwenerName] = useState("");
 
-  const userID = localStorage.getItem("userID");
-  const ownerID = localStorage.getItem("ownerID");
+  const userID =
+    typeof window !== "undefined" ? localStorage.getItem("userID") : null;
+  const ownerID =
+    typeof window !== "undefined" ? localStorage.getItem("ownerID") : null;
   useEffect(() => {
     if (id) {
       const getOwnerName = async () => {

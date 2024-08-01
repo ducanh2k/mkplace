@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 "use client";
 import React, { useState, useEffect } from "react";
 import type { FormProps } from "antd";
@@ -21,10 +22,7 @@ const App: React.FC = () => {
   const [token, setToken] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const router = useRouter();
-
   const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
-    console.log("Success:", values);
-
     try {
       const response = await axios.post("http://localhost:3333/users", {
         email: values.email,
@@ -33,16 +31,23 @@ const App: React.FC = () => {
 
       const token = response.data.token; // Assuming the token is in the response data
       setToken(token);
-      localStorage.setItem("token", token); // Store the token in local storage
-      localStorage.setItem("isLogin", true.toString());
+      typeof window !== "undefined"
+        ? localStorage.setItem("token", token)
+        : null; // Store the token in local storage
+      typeof window !== "undefined"
+        ? localStorage.setItem("isLogin", true.toString())
+        : null;
       console.log("Token:", token);
+
       // Make a request to get user details
       const userResponse = await axios.get("http://localhost:3333/user", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      localStorage.setItem("userID", userResponse.data.id.toString());
+      typeof window !== "undefined"
+        ? localStorage.setItem("userID", userResponse.data.id.toString())
+        : null;
       if (userResponse.data.isAdmin === "true") {
         localStorage.setItem("isAdmin", "true");
       } else {
